@@ -32,3 +32,2506 @@ update: 08012020
 
 
 
+
+
+
+[MOUNT CD DRIVE]
+
+## make sure you add the CD on the VBox configuration
+
+mkdir /cdrom
+
+mount /dev/cdrom /cdrom
+
+vi /etc/yum.repos.d/local.repo
+
+[LocalRepo]
+name=Local Repository
+baseurl=file:///cdrom
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+
+
+yum clean all
+
+
+[mount loop]
+# mount -o loop /dev/cdrom /<mountpoints>
+
+
+# yum list
+
+## install packages
+
+yum install wget
+
+
+
+
+[ Need to set up yum repository for locally-mounted DVD on Red Hat Enterprise Linux 7 ]
+
+for ISO
+# mkdir -p  /media/cdrom
+# mount -o loop RHEL7.1.iso /media/cdrom
+
+for DVD
+# mkdir -p  /media/cdrom
+# mount /dev/sr0  /media/cdrom
+
+vi /etc/yum.repo.d/local.repo
+
+[LocalRepo]
+name=Local Repository
+baseurl=file:///media/cdrom
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+
+
+# yum clear all
+# yum repolist
+
+
+
+
+
+
+
+
+
+
+
+
+[CONFIGURE DATE & TIME]
+
+real-time clock (RTC) = hardware clock
+system clock = software clock
+
+System time MUST be on  =  Coordinated Universal Time (UTC)
+Local time = time in your current time zone
+
+
+Command line tools:
+I. timedatectl
+II. date
+III. hwclock
+
+
+
+I [timedatectl]
+1. Display current date and time
+	# timedatectl
+	      Local time: Wed 2016-11-23 14:47:11 JST
+	  Universal time: Wed 2016-11-23 05:47:11 UTC
+	        RTC time: Wed 2016-11-23 05:47:11
+	        Timezone: Japan (JST, +0900)
+	     NTP enabled: n/a
+	NTP synchronized: no
+	 RTC in local TZ: no
+	      DST active: n/a
+
+
+	IMPORTANT:
+	run command below when time & date updated via chrony or ntpd
+	# systemctl restart systemd-timedated.sevices
+
+2. Change current system time to 11:26pm (UTC)
+
+	# timedatectl set-time 23:26:00	( UTC )
+	# timedatectl set-local-rtc <y|true|t|1>	(local time)
+ 	*** If at all possible use RTC in UTC, by calling 'timedatectl set-local-rtc 0'
+
+3. Set time zone
+
+	# timedatectl list-timezones
+	# timedatectl set-timezone Asia/Manila
+
+4. Set Date
+
+	# timedatectl set-time YYYY-MM-DD
+
+	Set current date to 2 June 2013 and keep the current time (11:26 p.m.)
+	# timedatectl set-time '2013-06-02 23:26:00'
+
+5. Sync system clock with a remote server
+
+	# timedate set-ntpd <yes(default)|no>	## chrony or ntpd service should be running
+
+
+
+II. [ date ]
+1. Display date and time
+	# date 
+	Wed Nov 23 14:32:14 PHT 2016    (default display local time)
+	# date --utc or -u
+	Wed Nov 23 06:33:25 UTC 2016
+
+	# date +"format"
+	# date +"%Y-%m-%d %H:%M"
+	2016-11-23 14:34
+
+
+2. Change time
+	# date --set HH:MM:SS
+	# date --set 23:26:00
+
+3. Change date
+	# date --set YYYY-MM-DD
+	*** Note that changing the date without specifying the current time results in setting the time to 00:00:00
+
+	change the current date to 2 June 2013 and keep the current time (11:26 p.m.),
+	# date --set 2013-06-02 23:26:00
+
+
+III. [ hwclock ]
+
+	- saves its settings in the /etc/adjtime file
+	- rhel6 runs every bootup
+	- rhel7 runs every 11 minutes (on ntpd or ptp)
+
+1. check time
+	# hwclock
+	Wed 23 Nov 2016 04:25:19 PM PHT  -0.897413 seconds
+
+2. set time and date
+	# hwclock --set --date "dd mmm yyyy HH:MM"
+	# hwclock --set --date "21 O ct 20 14 21: 17" [--utc|--localtime]	## keep HW clock in UTC or local time
+
+3. Sync date and time
+	- set the hardware clock to the current system time
+	# hwclock --systohc
+
+	- set the system time from the hardware clock
+	# hwclock --hctosys
+
+
+	- set the hardware clock to the current system time and keep the hardware clock in local time
+	# hwclock --systohc --localtime
+
+
+[TIME ZONE TIMEDATED]
+
+How to change time zone from command line on RHEL 7 ?
+
+
+1. Find the desired time zone with the below command or we can use the command "tzselect" to find the desired time zone..
+    Let's make "Asia/Shanghai" as an example.
+# timedatectl list-timezones  | grep -i <country>
+
+2. Change the time zone.
+# timedatectl set-timezone Asia/Shanghai   OR   UTC    OR Asia/Singapore
+
+
+3. Verify the status of time zone.
+# timedatectl status
+
+
+
+
+
+[USERS AND GROUPS]
+
+
+UID = users id number
+/etc/passwd - world readable users file
+/etc/shadow - encrypted password hash
+
+GID = group id number
+/etc/group
+gpasswd = utility for administrating the /etc/group file
+
+UPG = Users Private Group
+/etc/bashrc = determined the what permissions are applied to newly created files or dir called umask
+umask=022  - default umask setting
+
+
+/etc/login.defs - store the default security policies for newly created users
+
+chage = command to change/modify existing user policy
+chage -l <username>   ## list user existing policy
+
+
+Command line utilities for managing users and groups
+
+Utilities		Desc
+id		Display user and group IDs
+useradd,usermod,	Standard utilities for adding, modiying and deleting users account
+userdel	
+groupadd,groupmod,	Standard utilities for adding, modifying, and deleting groups.
+groupdel
+gpasswd		Standard utility for administering the /etc/group config file.
+pwck,grpck	Utilitues that can be use for verification of the passwd group, and associated show files.
+pwconv,pwunconv	Utilities that can be use for the conversion of passwords to shadows, or back from shadows
+		to standard password.
+grpconv,grpunconv	Utilities can be used for conversion of shadowed information for group accounts.
+
+
+
+useradd [options] <username> = create new user
+passwd <username> = change password for username
+
+
+/etc/passwd
+juan:x:1001:1001::/home/juan:/bin/bash
+    juan 	: username
+    x	: shadows passwords
+    1001	: UID > 999      ## in RHEL7   UID < 1000 = reserved for system use only
+    1001	: GID > 999      ## in RHEL7   UID < 1000 = reserved for system use only
+    ::	: GECOS - addn'l user info
+    /home/juan	: user home dir
+    /bin/bash	: default shell.
+
+/etc/shadow
+juan:!!:14798:0:99999:7:::
+    juan	: username
+    !!	: locks the account
+   **  To activate it, the administrator must next assign a password to 
+         the account using the passwd command
+
+
+/etc/group
+juan:x:1001
+    juan	: username
+    x	: using shadow group passwords
+    1001	: GID matches juan's group in /etc/passwd
+
+/etc/gshadow
+juan:!::
+    juan	: username
+    !	: locks the group
+    ::	: all other fields are blank
+
+
+/home/juan	- juan's home dir
+/etc/skel		- contains default user settings
+$ ls -al /etc/skel/
+total 24
+drwxr-xr-x.  2 root root   59 Jul 15 12:56 .
+drwxr-xr-x. 76 root root 8192 Nov 24 08:56 ..
+-rw-r--r--.  1 root root   18 Jan 11  2015 .bash_logout
+-rw-r--r--.  1 root root  193 Jan 11  2015 .bash_profile
+-rw-r--r--.  1 root root  231 Jan 11  2015 .bashrc
+
+
+
+[GROUP]
+
+Adding new group
+    # groupadd [option] <group_name>
+
+
+Creating Group Dir
+1. create dir
+   # mkdir /opt/candy
+
+2. add the candy group to the system
+   # groupadd candy
+
+3. associate the contents of the /opt/candy dir with the candy group
+   # chown root:candy /opt/candy
+
+4. allow users in the group to create files w/in the dir and set the setgid bit
+   # chmod 2775 /opt/candy
+   ** At this point, all members of the mypro ject group can create and edit files in the
+	/opt/candy/ directory without the administrator having to change file permissions
+	every time users write new files.
+
+5. verify permission
+   # ls -ld /opt/candy
+   drwxrwsr-x. 2 root candy 6 Nov 24 10:21 /opt/candy
+
+6. add users to the candy group:
+   # usermod -aG candy <username>
+
+
+
+
+Gaining Privileges
+1. create admin user
+   # useradd admin
+2. add user to wheel group
+   # usermod -aG wheel <username>
+3. on /etc/pam.d/su     remove the # character.
+     #auth           required        pam_wheel.so use_uid
+
+
+
+
+[YUM]
+** system must be registered to use this functionality
+1. check for package update
+   # yum check-update
+   dracut.x86_64	033-360.el7_2	rhel-7-server-rpms
+	dracut 	- name of the package
+	.x86_64 	- CPU arch the package was built for.
+	033	- version of the updated package to be installed
+	360.el7	- release of the updated package
+	dracut.x86_64 033-360.el7_2 rhel-7-
+	server-rpms	- repository in which the updated package is located.
+2. updating single package
+   # yum update <package_name>
+3. updating group package
+   # yum group update <group_name>
+4. updateing all packages and their dependencies
+   # yum update
+5. updating security-related 
+   # yum update --security
+   # yum update-minimal --security
+	For example, assume that:
+	the kernel-3.10.0-1 package is installed on your system;
+	the kernel-3.10.0-2 package was released as a security update;
+	the kernel-3.10.0-3 package was released as a bug fix update.
+   Then yum update-minimal --security updates the package to kernel-3.10.0-2, and 
+   yum update --security updates the package to kernel-3.10.0-3.
+
+
+
+Upgrading the System Off-line with ISO and Yum
+OR
+Upgrading rhel7.1 to rhel7.3
+
+** Clean the yum cache:
+	# rm -Rf /var/cache/yum/*
+	# yum clean all
+
+1. Create mount dir
+   # mkdir /media/rhel7
+
+2. mount the RHEL7 ISO image to  target dir
+   # mount -o loop iso_name /media/rhel7
+   ** "-o loop" - option is required to mount the file as a block device.
+
+3. copy media.repo file from mount dir to /etc/yum.repos.d/ dir
+   # cp /media/rhel7/media.repo /etc/yum.repos.d/new.repo
+
+4. edit /etc/yum.repos.d /new.repo add the following
+   baseurl=file:///media/rhel7
+
+5. system can now be updated 
+   # yum repolist
+   # yum check-update
+   # yum update
+
+AFTER *FUL UPGRADE
+6. un mount mounted dir
+   # umount /media/rhel7
+7. remove mount dir created
+   # rmdir /medial/rhel7
+8. delete the new.repo created.
+   # rm /etc/yum.repos.d/new.repo
+
+
+Working with Packages
+
+# yum search <term...>
+# yum list all
+# yum list installed
+# yum list available
+# yum repolist [-v|all]
+# yum repoinfo
+
+# yum info <packagename>
+
+
+Installing package
+# yum install <package_name [package_name]...>
+# yum provides "*bin/named"
+# yum localinstall <path>
+
+Downloading package
+# yum install <package>
+  ..
+  Installed size: 183 k
+  Is this ok [y/d/N]:
+  ..
+
+
+
+Package Groups
+# yum group list [ ids [hidden ]  ]
+# yum groups summary
+
+# yum group install <["group name" | groupid]>
+OR
+# yum install [@group|@^group]
+
+    EXAMPLE
+	# yum group install "KDE Desktop"
+	# yum group install kde-desktop
+	# yum install @"KDE Desktop"
+	# yum install @kde-desktop
+
+
+
+Removing Packages
+# yum group remove "KDE Desktop"
+# yum group remove kde-desktop
+# yum remove @"KDE Desktop"
+# yum remove @kde-desktop
+
+
+YUM history
+/var/lib/yum/history
+
+# yum history
+# yum history list
+# yum history list all
+# yum history list 3..6
+
+Sync the rpmdb or yumdb
+# yum history sync
+
+# yum history stats
+# yum history summary
+# yum history package-list <package_name>
+
+
+Examining Transaction
+# yum history summary <id>
+# yum history info <id>
+
+
+Reverting and Repeating Transaction
+To revert a transaction
+# yum history undo <id>
+
+To repeat a particular transaction
+# yum history redo <id>
+
+** Note that both yum history undo and yum history redo commands only 
+revert or repeat the steps that were performed during a transaction.
+
+
+
+
+Starting New Transaction History
+# yum history new
+	- Will create a new, empty database file in the /var/lib/yum/history/ directory.
+	- The old transaction history will be kept, but will not be accessible as long as a 	
+	  newer database file is present in the directory.
+
+
+
+Repo configurations
+/etc/yum.conf
+/etc/yum.repos.d/
+
+
+
+Install yum-utils
+# yum install yum-utils
+
+
+Display the current values of global yum options
+# yum-config-manager
+
+Add new repository
+# yum-config-manager --add-repo <repo_url>
+
+Enable/Disable repository
+# yum-config-manager [--enable|--disable] <repository>....  ## repository unique repository ID
+** use yum repolist all  to see repository ID
+
+Enable/Disable ALL repository 
+# yum-config-manager [--enable|--disable] \*   
+
+
+
+
+Creating YUM REPOSITORY
+
+1. install createrepo packages
+   # yum install createrepo
+
+2. copy all packages into one dir
+    /mnt/local_repo/
+
+3. create repo
+   cd /mnt/local_repo
+   # createrepo --database /mnt/local_repo
+** This creates the necessary metadata for your yum repository, 
+     as well as the sqlite database for speeding up yum operations.
+
+
+
+
+[ YUM EXCLUDE PACKAGE ]
+
+# yum update --exclude=PACKAGENAME 
+# yum update --exclude=kernel*
+
+
+/etc/yum.conf
+[main]
+cachedir=/var/cache/yum/$basearch/$releasever
+:
+:
+exclude=kernel* redhat-release*                           <==== 
+
+#### exclude 32 bit packages
+exclude=*.i?86 *.i686
+
+
+
+
+
+[SYSTEMD]
+
+What is systemd?
+
+Systemd is a system and service manager. Systemd is compatible with SysV.
+
+
+
+Why systemd?
+
+At boot, SysV starts services one at a time, moving to the next after running dependency checks 
+and waiting on the daemon to start. Systemd can start services in parallel by taking advantage 
+of the daemon to daemon relationship in that dependent daemons do not actually need to be running, 
+they only need the correct domain sockets to be available. Systemd creates all sockets first, 
+all the daemons second and any client requests to daemons not yet running are cached in the 
+socket buffer and filled when the daemons come online.
+
+
+[SYSTEMCTL basic commands]
+
+List manageable services
+
+# systemctl list-units --type service
+
+
+Starting a service
+Upstart Command: 'service crond start'
+
+# systemctl start crond.service
+
+
+Stoping a service
+Upstart Command: 'service crond stop'
+
+# systemctl stop crond.service
+
+
+Checking the status of a service
+Upstart Command: 'service crond status'
+
+# systemctl status crond.service
+
+
+To list the status of all services:
+
+# systemctl list-unit-files --type=service --all
+
+
+Stopping a service
+Upstart Command: 'service crond stop'
+
+# systemctl stop crond.service
+
+
+Start service on boot
+Upstart Command: 'chkconfig crond on'
+
+# systemctl enable crond.service
+
+
+Do not start service on boot
+Upstart Command: 'chkconfig crond off'
+
+# systemctl disable crond.service
+
+
+
+
+-- MANAGING TARGETS(RUNLEVELS) --
+
+Runlevel	Target Units
+0	poweroff.target
+1	rescue.target
+2	multi-user.target
+3	multi-user.target
+4	multi-user.target
+5	graphical.target
+6	reboot.target
+
+
+List Runlevels/Targets
+
+List all target units with the command:
+
+# systemctl list-units --type target --all
+
+
+Print the default target:
+
+# systemctl get-default
+
+
+Change Runlevels/Targets
+
+Change the default target to 'runlevel 3':
+
+# systemctl set-default multi-user.target
+
+
+Switch to 'runlevel 3'
+
+# systemctl isolate multi-user.target
+
+
+
+
+Selecting different TARGET at boot time
+
+1. Reboot system
+2. Interrupt the boot loader menu count down
+3. Type e to edit current entry
+4. Move the cursor to the line that starts with linux16 (using End key). This is the kernel command line
+5. Append systemd.unit=<rescue|emergency>.target
+6. Ctrl-x to boot with these current target.
+
+
+
+
+Recover ROOT password
+
+1. (Re)boot the system
+2. Interrupt the boot loader menu count down
+3. Type e to edit current entry
+4. Move the cursor to the line that starts with linux16 (using End key). This is the kernel command line
+5. Append rd.break (this will break just before control is handed from the initramfs to the actual system).
+	NOTE: The initramfs prompt will show up on whatever console is specified last on the kernel command line.
+6. Ctrl-x to boot with the change.
+
+At this point, a root shell will be represented, with the root file system for the actual system mounted read-only on /sysroot
+
+7. Remount /sysroot as read-write
+   # mount -oremount,rw /sysroot
+
+8. Switch to a chroot jail, where /sysroot is treated as the root of the system tree
+   # chroot /sysroot
+
+9. Set new root password
+   # passwd root
+
+10. Relabled all unlabled files (like /etc/shadow) during boot.
+   # touch /.autorelabel
+
+11. Exit chroot; Exit initramfs
+
+
+
+
+
+
+
+
+
+
+
+Listing dependencies: 
+To see dependencies of a service, use the list-dependencies option, as follows:
+
+# systemctl list-dependencies nfs-server.service
+nfs-server.service
++-nfs-idmap.service
++-nfs-mountd.service
++-nfs-rquotad.service
++-proc-fs-nfsd.mount
++-rpcbind.service
++-system.slice
++-var-lib-nfs-rpc_pipefs.mount
++-basic.target
+  +-alsa-restore.service
+  +-alsa-state.service
+...
+
+
+
+
+
+Listing units in targets: 
+To see what services and other units (service, mount, path, socket, and so on) are associated with a particular target, type the following:
+
+# systemctl list-dependencies multi-user.target
+multi-user.target
++-abrt-ccpp.service
++-abrt-oops.service
++-abrt-vmcore.service
++-abrt-xorg.service
++-abrtd.service
++-atd.service
++-auditd.service
+
+
+
+
+
+List specific types of units: Use the following command to list specific types of units (in these examples, service and mount unit types):
+
+# systemctl list-units --type service 
+UNIT                         LOAD   ACTIVE SUB     DESCRIPTION
+abrt-ccpp.service            loaded active exited  Install ABRT coredump hook
+abrt-oops.service            loaded active running ABRT kernel log watcher
+abrt-xorg.service            loaded active running ABRT Xorg log watcher
+abrtd.service                loaded active running ABRT Automated Bug Reporting 
+accounts-daemon.service      loaded active running Accounts Service
+...
+
+
+
+
+# systemctl list-units --type mount 
+UNIT                         LOAD   ACTIVE SUB     DESCRIPTION
+-.mount                      loaded active mounted /
+boot.mount                   loaded active mounted /boot
+dev-hugepages.mount          loaded active mounted Huge Pages File System
+...
+
+
+
+
+
+Listing all units: To list all units installed on the system, along with their current states, type the following:
+
+# systemctl list-unit-files
+UNIT FILE                            STATE
+proc-sys-fs-binfmt_misc.automount    static
+dev-hugepages.mount                  static
+dev-mqueue.mount                     static
+proc-sys-fs-binfmt_misc.mount        static
+...
+arp-ethers.service                   disabled
+atd.service                          enabled
+...
+
+
+
+
+
+
+View service processes with systemd-cgtop: 
+To view processes associated with a particular service (cgroup), you can use the systemd-cgtop command. 
+Like the top command (which sorts processes by such things as CPU and memory usage), systemd-cgtop lists 
+running processes based on their service (cgroup label). Once systemd-cgtop is running, you can press keys to 
+sort by memory (m), CPU (c), task (t), path (p), or I/O load (i). 
+
+Here is an example:
+
+# systemd-cgtop
+
+
+
+
+
+Recursively view cgroup contents: To output a recursive list of cgroup content, use the systemd-cgls command:
+
+# systemd-cgls
++-user.slice
+¦ +-user-1000.slice
+¦ ¦ +-session-5.scope
+¦ ¦ ¦ +-2661 gdm-session-worker [pam/gdm-password]
+¦ ¦ ¦ +-2672 /usr/bin/gnome-keyring-daemon --daemonize --login
+¦ ¦ ¦ +-2674 gnome-session --session gnome-classic
+¦ ¦ ¦ +-2682 dbus-launch --sh-syntax --exit-with-session
+¦ ¦ ¦ +-2683 /bin/dbus-daemon --fork --print-pid 4 --print-address 6 --session
+¦ ¦ ¦ +-2748 /usr/libexec/gvfsd
+...
+
+
+
+
+[ RUNLEVEL ]
+
+$ runlevel
+N 5
+
+$ who -r
+run-level 5  2019-04-22 09:32
+
+$ systemctl get-default
+graphical.target
+
+Default runlevel: 
+The default runlevel (previously set in the /etc/inittab file) is now replaced by a default target. 
+	#   5 - X11
+	#   6 - reboot (Do NOT set initdefault to this)
+	# 
+	id:5:initdefault:
+
+The location of the default target is /etc/systemd/system/default.target, which by default is linked to the multi-user target.
+	[Unit]
+	:
+	:
+	Requires=multi-user.target
+
+
+
+
+
+[Resetting the Root Password of RHEL-7 / systemd]
+
+
+1) Boot your system and wait until the GRUB2 menu appears.
+2) In the boot loader menu, highlight any entry and press e.
+3) Find the line beginning with linux. At the end of this line, append the following:
+
+init=/bin/bash
+
+Or if you face a panic, instead of "ro" change to "rw" to sysroot as example below:
+
+rw init=/sysroot/bin/sh
+
+
+4) Press F10 or Ctrl+X to boot the system using the options you just edited.
+Once the system boots, you will be presented with a shell prompt without having to enter any user name or password:
+
+sh-4.2#
+
+
+5) Load the installed SELinux policy:
+
+sh-4.2# /usr/sbin/load_policy -i
+
+
+6) Execute the following command to remount your root partition:
+
+sh4.2# mount -o remount,rw /
+
+
+
+7) Reset the root password:
+
+sh4.2# passwd root
+
+
+When prompted to, enter your new root password and confirm by pressing the Enter key. Enter the password for the second time to make sure you typed it correctly and confirm with Enter again. If both passwords match, a message informing you of a *ful root password change will appear.
+
+8) Remount the root partition again, this time as read-only:
+
+sh4.2# mount -o remount,ro /
+
+
+9) Reboot the system. From now on, you will be able to log in as the root user using the new password set up during this procedure.
+
+
+
+
+
+
+Please note that in case you are using a USB keyboard or if the system is a virtual guest, the following instructions need to be followed
+
+Note that the above mentioned steps may drop you to a prompt without access to a USB keyboard and do not work in a VM like KVM or VirtualBox. To reset the root password in these environments:
+
+1) add rd.break instead of init=/bin/sh to the end of the line that starts with linux in Grub2:
+
+2) when the system boots, run the following command to remount the root filesystem in read-write mode:
+
+mount -o remount,rw /sysroot
+
+
+
+3) then run:
+
+chroot /sysroot
+
+
+
+4) run:
+
+passwd
+
+
+5) instruct SELinux to relabel all files upon reboot (because the /etc/shadow file was changed outside of its regular SELinux context) -- run:
+
+touch /.autorelabel
+
+
+
+Note that this may take some time during the next boot.
+
+
+6) type exit to leave the chroot environment.
+7) type exit to log out.
+
+The system will reboot, re-apply all SELinux labels, and present you with a regular login prompt.
+
+
+
+
+
+
+
+[ How to boot with old kernel version in RHEL7 ?  ]
+
+$ Solution Verified  - Updated October 31 2017 at 11:38 AM -  English   
+
+Environment
+   Red Hat Enterprise Linux 7 [ALL]
+
+Issue
+   System installed with latest kernel version, but need to boot with old one.
+   How to change the default boot entry for kernel in RHEL 7 ?
+
+Resolution
+
+   By default, the key for the GRUB_DEFAULT directive in the /etc/default/grub file is the word saved. 
+   This instructs GRUB 2 to load the kernel specified by the saved_entry directive in the GRUB 2 environment file, 
+   located at /boot/grub2/grubenv. One can set another GRUB record to be the default, using the grub2-set-default command, 
+   which will update the GRUB 2 environment file.
+   
+   By default, the saved_entry value is set to the name of latest installed kernel of package type kernel. 
+   This is defined in /etc/sysconfig/kernel by the UPDATEDEFAULT and DEFAULTKERNEL directives. 
+   The file can be viewed by the root user as follows:
+
+$ cat /etc/sysconfig/kernel
+# UPDATEDEFAULT specifies if new-kernel-pkg should make
+# new kernels the default
+UPDATEDEFAULT=yes
+
+# DEFAULTKERNEL specifies the default kernel package type
+DEFAULTKERNEL=kernel
+
+
+
+   To force a system to always use a particular menu entry, use the menu entry name as the key to the GRUB_DEFAULT directive in the /etc/default/grub file. 
+   To list the available menu entries, run the following command as root:
+
+~]# awk -F\' '$1=="menuentry " {print $2}' /etc/grub2.cfg
+
+Eg: 
+~]#  awk -F\' '$1=="menuentry " {print $2}' /etc/grub2-efi.cfg 
+Fedora (4.1.8-100.fc21.x86_64) 21 (Twenty One)                                                           <<==== Entry 0               
+Fedora, with Linux 3.17.4-301.fc21.x86_64                                                                <<==== Entry  1
+Fedora, with Linux 0-rescue-e612735898ce44f4ba8217896dcbe494
+
+
+
+   GRUB 2 supports using a numeric value as the key for the saved_entry directive to change the default order in which the kernel or operating systems are loaded. 
+   To specify which kernel or operating system should be loaded first, pass its number to the grub2-set-default command. For example:
+
+~]# grub2-set-default 1
+
+
+
+   Check the below file to see the kernel which will be loaded at next boot, crosscheck the numeric value with the menuentry in the /etc/default/grub file.
+
+~]# cat /boot/grub2/grubenv |grep saved
+
+Eg:
+~]# cat /boot/grub2/grubenv |grep saved
+saved_entry=1
+
+
+
+   Changes to /etc/default/grub require rebuilding the grub.cfg file as follows:
+   Rebuild the /boot/grub2/grub.cfg file by running the grub2-mkconfig -o command as follows:
+   On BIOS-based machines: ~]# grub2-mkconfig -o /boot/grub2/grub.cfg
+   On UEFI-based machines: ~]# grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[SYSTEMD REFERENCE CARD]
+
+VIEW systemd INFORMATION
+systemctl list-dependencies Show a unit’s dependencies
+systemctl list-sockets List sockets and what activates
+systemctl list-jobs View active systemd jobs
+systemctl list-unit-files See unit files and their states
+systemctl list-units Show if units are loaded/active
+systemctl get-default List default target (like run level)
+
+WORKING WITH SERVICES
+systemctl stop service Stop a running service
+systemctl start service Start a service
+systemctl restart service Restart a running service
+systemctl reload service Reload all config files in service
+systemctl status service See if service is running/enabled
+systemctl enable service Enable a service to start on boot
+systemctl disable service Disable service--won’t start at boot
+systemctl show service Show properties of a service (or other unit)
+systemctl -H host status network Run any systemctl command remotely
+
+CHANGING SYSTEM STATES
+systemctl reboot Reboot the system (reboot.target)
+systemctl poweroff Power off the system (poweroff.target)
+systemctl emergency Put in emergency mode (emergency.target)
+systemctl default Back to default target (multi-user.target)
+
+VIEWING LOG MESSAGES
+journalctl Show all collected log messages
+journalctl -u network.service See network service messages
+journalctl -f Follow messages as they appear
+journalctl -k Show only kernel messages
+
+USING UNIT FILES
+Besides services, most systemd commands can work with these unit types:
+paths, slices, snapshots, sockets, swaps, targets, and timers
+
+
+
+
+
+
+
+
+
+
+[JOURNALCTL]
+view journal (log) files: Using the journalctl command you can view messages from the systemd journal. 
+Using different options you can select which group of messages to display. 
+The journalctl command also supports tab completion to fill in fields for which to search. 
+
+
+
+Here are some examples:
+
+# journalctl -h     View help for the command
+# journalctl -k     View kernel messages from current boot
+# journalctl -f     Follow journal messages (like tail -f)
+# journalctl -u NetworkManager     View messages for specific unit (can tab complete) 
+# journalctl -b [-1|-2]	View boot log and past logs
+# journalctl -p [1234567][..234567]	view log levels 
+	CODE	PRIORITY		SEVERITY
+	0	emerg		System is unusable
+	1	alert		Action must be taken immediately
+	2	crit		Critical condition
+	3	err		Non-critical error condition
+	4	warning		Warning condition
+	5	notice		Normal but significant event
+	6	info		Informational event
+	7	debug		Debugging-level message
+
+
+
+
+Default log location	/run/log/journal
+
+
+Keep record persistent
+# vi /etc/systemd/journald.conf
+Storage=persistent		## log will save to /var/log/journal
+
+OR
+
+With storage option "persistent", data will be stored preferably on disk, 
+i.e. below the /var/log/journal hierarchy (which is created if needed), 
+with a fallback to /run/log/journal (which is created if needed), 
+during early boot and if the disk is not writable
+# sed -i 's/#Storage=auto/Storage=persistent/' /etc/systemd/journald.conf
+# systemctl restart systemd-journald.service
+
+
+
+# journalctl --disk-usage
+# journalctl --since "04:00"
+# journalctl --since yesterday
+
+
+
+
+[Make journald log to REMOTE log servers]
+
+1. uncomment 
+# vi /etc/systemd/journald.conf
+#ForwardToSyslog=yes
+#MaxLevelSyslog=warn
+
+2. rsyslog daemon should be running
+# service rsyslog status
+Redirecting to /bin/systemctl status  rsyslog.service
+-  rsyslog.service - System Logging Service
+   Loaded: loaded (/usr/lib/systemd/system/rsyslog.service; enabled; vendor preset: enabled)
+   Active: active (running) since Mon 2017-08-07 08:23:26 PHT; 44min ago
+ Main PID: 978 (rsyslogd)
+   CGroup: /system.slice/rsyslog.service
+           +-978 /usr/sbin/rsyslogd -n
+
+Aug 07 08:23:25 server.abet.net systemd[1]: Starting System Logging Service...
+Aug 07 08:23:26 server.abet.net systemd[1]: Started System Logging Service.
+
+
+
+
+
+[RSYSLOG]
+
+# rpm -qa rsyslog
+# service rsyslog status
+
+configuration
+/etc/rsyslog.conf
+/etc/rsyslog.d
+/etc/sysconfig/rsyslog
+/etc/logrotate/rsyslog
+
+
+[Sample logrotate config]
+
+# vi /etc/logrorate.d/sample
+/var/log/message 
+{
+	compress
+	daily
+	size 100    ## mean kb
+	dateext
+	create 660 abet support
+}
+
+
+run rotate the sample config
+
+# logrotate -fv /etc/logrotate.d/sample
+
+
+[Control what gets log]
+# vi /etc/rsyslog.conf
+
+Add the following below local7.* line
+local4.[*|info|warn|...]	/var/log/local4.log
+
+Restart rsyslogd
+# service rsyslogd restart; service rsyslogd status
+
+Test the log
+# logger -p local4.info "Hellow world"
+
+Don't log local to other log by adding    local4.none   on the line
+*.info;mail.none;authpriv.none;cron.none                /var/log/messages
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[TIMEDATECTL]
+
+
+By default, the system is configured to use UTC. 
+
+To configure your system to maintain the clock in the local time, run the timedatectl command with the set-local-rtc option as root:
+
+# timedatectl set-local-rtc boolean
+
+
+To configure your system to maintain the clock in the local time, replace boolean with yes (or, alternatively, y, true, t, or 1). 
+To configure the system to use UTC, replace boolean with no (or, alternatively, n, false, f, or 0). 
+The default option is no.
+
+
+
+SET TIME ZONE
+
+#  timedatectl list-timezones | grep Asia/Sinagapore	- list time zones
+
+# timedatectl list-timezones | grep Singapore
+
+# timedatectl set-timezone Asia/Singapore
+
+
+
+
+The NTP service can be enabled and disabled using a command as follows:
+
+# timedatectl set-ntp boolean
+
+# timedatectl set-ntp yes	- enable automatic synchronization of the system clock with a remote server
+
+
+
+
+
+Check time and date
+
+# timedatectl
+
+
+##### after modification run this
+
+# systemctl restart systemd-timedated.services
+
+
+
+# timedatectl set-time HH:MM:SS		- set time   same as   "date --set" and "hwclock --systohc" commands
+# timedatectl set-time 23:26:00
+
+
+
+# timedatectl set-time YYYY-MM-DD		- set date will result time to 00:00:00
+# timedatectl set-time '2013-06-02 23:26:00'
+
+
+ 
+
+
+[ SSHD ]
+OpenSSH
+
+$ rpm -qa |grep -i openssh
+openssh-6.6.1p1-31.el7.x86_64
+openssh-server-6.6.1p1-31.el7.x86_64
+openssh-clients-6.6.1p1-31.el7.x86_64
+
+### openssh
+/etc/ssh
+/etc/ssh/moduli
+/usr/bin/ssh-keygen
+/usr/libexec/openssh
+/usr/libexec/openssh/ctr-cavstest
+/usr/libexec/openssh/ssh-keysign
+
+### openssh-server-6.6.1p1-31.el7.x86_64
+/etc/pam.d/sshd
+/etc/ssh/sshd_config
+/etc/sysconfig/sshd
+/usr/sbin/sshd
+/usr/sbin/sshd-keygen
+
+### Additional files....
+/usr/lib/systemd/system/sshd-keygen.service
+/usr/lib/systemd/system/sshd.service
+/usr/lib/systemd/system/sshd.socket
+/usr/lib/systemd/system/sshd@.service
+
+### openssh-clients-6.6.1p1-31.el7.x86_64
+/etc/ssh/ssh_config
+/usr/bin/scp
+/usr/bin/sftp
+/usr/bin/slogin
+/usr/bin/ssh
+/usr/bin/ssh-add
+/usr/bin/ssh-agent
+/usr/bin/ssh-copy-id
+/usr/bin/ssh-keyscan
+
+
+
+
+
+
+
+
+
+
+
+[ RHEL7 NETWORKING ]
+
+# nmcli dev status
+
+# nmcli dev show <iface>
+
+# nmcli con show [--active]
+
+
+# ip add show 
+
+
+ADD INTERFACE
+
+# nmcli con add con-name testiface type ethernet ifname testiface
+
+# nmcli con add con-name 2testiface type ethernet ifname 2testiface ip4 192.168.0.5/24 gw4 192.168.0.254
+ 
+# nmcli con up <con-name>
+
+To deactivate a network interface
+# nmcli dev disconnect <dev-name>	    ##  NOT    # nmcli con down <con-name>
+
+
+
+MODiFYING NETWORK CONNECTION
+
+List current settings for a connection
+# nmcli con show <con-name>
+
+Modify interface
+# nmcli con mod testiface ipv4.address 192.1.1.1/24 ipv4.gateway 192.1.1.254 ipv4.method manual
+
+	NOTE: change ipv4.method from auto to manual when the interface is set to static IP address
+
+
+Adding multiple DNS address
+
+Use:  + or - at the start of the setting name
+# nmcli con mod [+|-]ipv4.dns 192.1.1.111
+
+
+Modify the setting (/etc/sysconfig/network-scripts/ifcfg-devname) via text editor is OK.
+But you need to run so that NetworkManager reads the configuarion changes.
+
+# vi /etc/sysconfig/network-scripts/ifcfg-devname
+# nmcli con reload
+
+
+DELETING NETWORK CONNECTION
+
+# nmcli con del <con-name>
+	disconnecting it from device and removing the file /etc/sysconfig/network-scripts/ifcfg-<con-name>
+
+
+
+
+
+
+MODIFYING HOSTNAME
+
+/etc/hostname
+/etc/sysconfig/network  ### OLD SETTINGS
+
+# hostname
+# hostnamectl set <hostname>
+
+
+
+SPECIAL NOTE :
+
+	# ip link		## display all network interfaces recognized by the system
+	# nmcli		## list the network interfaces that NetworkManager manages
+
+
+
+
+[ IPV6 on RHEL7 ]
+
+DISABLE IPV6
+1. # vi /etc/default/grub  
+
+2. append  ipv6.disabled=1   to end of  GRUB_CMDLINE_LINUX 
+    GRUB_CMDLINE_LINUX="crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet ipv6.disabled=1"
+
+3. generate grub.cfg
+   # grub2-mkconfig -o /boot/grub2/grub.
+
+For UEFI systems
+
+   # grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg
+
+4. Reboot
+
+NOTE: If done with steps above and Selinux denied messages in audit.log file such as avc:denied (module request) the disable the ipv6 from /etc/sysctl.d/ipv6.conf
+
+
+5. created a new file named /etc/sysctl.d/ipv6.conf and add the following:
+# To disable for all interfaces
+net.ipv6.conf.all.disable_ipv6 = 1
+# the protocol can be disabled for specific interfaces as well.
+net.ipv6.conf.<interface>.disable_ipv6 = 1
+
+6. reload new settings
+# sysctl -p /etc/sysctl.d/ipv6.conf
+
+7. rebuild Initial RAM Disk Image
+# dracut -f
+
+OPTIONAL:
+To prevent rpm* messages output 
+8. # vi /etc/netconfig          ## look for udp6 and tcp6 
+change  the "v" in th third column to "-" (hypen/dash).
+
+
+
+ENABLE IPV6
+
+1. # vi /etc/default/grub
+
+2. delete the entry ipv6.disable=1 from the GRUB_CMDLINE_LINUX
+
+3. generate grub.cfg
+   # grub2-mkconfig -o /boot/grub2/grub.
+
+For UEFI systems
+
+   # grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg
+
+
+4. Delete the /etc/sysctl.d/ipv6.conf
+
+5. Comment out #AddressFamily inet  on /etc/ssh/sshd_config
+
+6. Make sure the line below exist on /etc/hosts
+   ::1	localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+7. Reboot
+
+
+
+
+NETWORK INTERFACE
+
+# ip link		# identify available NICs
+
+# vi /etc/sysconfig/network-scripts/ifcfg-<ifname>
+
+[ifcfg-eth0]	dhcp minimum configuration
+DEVICE=<ifname>
+TYPE=Ethernet
+BOOTPROTO=[dhcp|manual|none]
+ONBOOT=[yes|no]
+
+# ifup/ifdown <ifname>
+
+# ip add show [ifname]
+
+
+[ifcfg-eth0]	static configuration minimum config
+DEVICE=<ifname>
+NAME=<name>
+TYPE=ethernet
+BOOTPROTO=none
+ONBOOT=[yes|no]
+IPADDR=192.168.1.201
+PREFIX=24
+GATEWAY=192.168.1.1
+
+
+# ifup/ifdown <ifname>
+
+# ip add show [ifname]
+
+
+
+
+
+
+
+NETWORK TEAMING
+
+#### Make sure that the 2 interface for teaming is not yet configured ; no /etc/...../ifcfg-<ifname>  yet.
+
+
+# ip link    or     # nmcli dev [show]
+
+Create teaming interface with "active-backup"
+# nmcli con add type team con-name team0 iface team0 confi '{"runner": {"name": "active-backup}}'
+# nmcli con show
+
+Define setting for team0
+# nmcli con mod team0 ipv4.addresses '192.168.1.99/24'
+# nmcli con mod team0 ipv4.method manual
+
+Assign interface/s to team0
+# nmcli con add type team-slave con-name team0-port1 ifname enp0s10 master team0
+# nmcli con add type team-slave con-name team0-port2 ifname enp0s9 master team0
+
+
+Test team interface
+# sudo teamdctl team0 state
+# sudo teamnl team0 options
+# sudo teamnl team0 ports
+
+Set team mode 
+# sudo teamnl team0 setoption mode activebackup
+
+# sudo teamnl team0 getoption activeport
+
+
+
+
+NETWORK BRIDGING
+
+
+# lsmod | grep bridge
+
+# modinfo bridge
+
+Create bridge interface
+# vi /etc/sysconfig/network-scripts/ifcfg-br0
+DEVICE=br0
+NAME=br0
+TYPE=Bridge
+IPADDR=192.168.1.241
+PREFIX=24
+BOOTPROTO=none
+ONBOOT=yes
+DELAY=0
+
+
+Create  bridge slave or port
+# vi /etc/sysconfig/network-scripts/ifcfg-br0-port[1|2]
+DEVICE=<ifname>
+NAME=br0-port[1|2]
+TYPE=ethernet
+BOOTPROTO=none
+ONBOOT=yes
+BRDIGE=br0
+
+
+
+
+
+
+
+
+
+[SELINUX]
+
+# yum install policycoreutils-python libsemanage-python
+	- rpm where semanage are located
+
+
+
+# semanage -l
+# semanage port -l
+# semanage fcontext -l	## list all current rules in your filesystem
+# seinfo -t	## List all available file contexts 
+
+
+allow port 
+# semanage port -a -t ssh_port_t -p tcp 2222
+# ss -tulnp | grep ssh
+
+NOTE: dont forget to add to the firewall 
+
+
+
+install selinux manual documentation
+# yum install selinux-policy-devel
+# mandb
+# man -k _selinux
+
+
+
+check for se error on audit.log
+# yum install setroubleshoot-server
+# sealert -a /var/log/audit/audit.log
+
+
+
+
+
+
+
+[ DNS ] domain name server
+
+install the ff packages :
+bind-utils		- for dig,host command
+unbound		- for dns caching
+
+
+A / AAAA		= maps a host name to ipv4 / ipv6 address
+# host -v -t A example.com
+# host -v -t AAAA a.root-servers.net
+
+
+CNAME		= aliases one name to another name (the canonical name),
+		   which should have A or AAAA records
+#host -v -t A ipa-ca.server0.example.com
+
+i.e.:
+	www-dev.example.com	IN CNAME lab.example.com
+	www.example.com		IN CNAME www.redhat.com
+
+ 
+PTR		= maps ipv4/ipv6 to a host name
+		  they are use for reverse DNS resolution.
+# host -v -t PTR 172.25.0.10
+
+
+NS		= maps domain name to DNS name server w/c is authoritative for its DNS zone.
+*** every public autoritative name server for the zone must have an NS record.
+# host -v -t NS example.com
+
+
+SOA (start of authority)	= provide info about how a DNS zone works
+			   1 SOA record for a zone.
+# host -v -t SOA example.com
+
+
+MX (mail exchange)	= maps domain name to mail exchange w/c will accept email for that name
+# host -v -t MX example.com
+
+
+TXT(text)		= used to map to arbitrary human-readable text.
+			  commonly used to supply data used by Sender Policy Framework (SPF),
+			  DomainKeys Identified Mail (DKIM), 
+			  Domain-based Message Authentication, Reporting and Conformance (DMARC)
+# host -v -t TXT lwn.net
+
+
+SRV (service)		= used to locate the hosts w/c support a particular service for a domain
+
+
+
+
+[UNBOUND]   DNS CACHING
+
+/etc/sysconfig/unbound
+/etc/unbound/conf.d
+/etc/unbound/unbound.conf
+/var/run/unbound
+
+# /usr/sbin/unbound[-*]
+
+
+
+
+
+
+
+
+
+
+
+
+[NFS]
+
+PORT: 2049
+
+/etc/exports		remote machine allowed to access nfs
+
+# yum install nfs-utils
+# rpm -ql nfs-utils
+
+
+
+check NFS server remotely
+$ /usr/sbin/rpcinfo -s <servername> | egrep 'nfs|mountd'
+    100003  4,3       tcp,udp                          nfs
+    100005  3,2,1     tcp,udp                          mountd
+
+
+
+
+
+remote NFS is exporting a certain directory
+$ /usr/sbin/showmount -e <servername>
+Export list for pdc1nasfiscorp01:
+/PDC1NASFISCORP01_LTC1NASFISCORP01_ORA_EBSNS_mirror (everyone)
+/PDC1NASFISCORP01_ORA_EBSNS                         (everyone)
+/PDC1NASFISCORP01_ORA_EBSNS/appsdev                 (everyone)
+/PDC1NASFISCORP01_ORA_EBSNS/appsuat                 (everyone)
+/PDC1NASFISCORP01_ORA_EBSNS/devfistop_41            (everyone)
+/PDC1NASFISCORP01_ORA_EBSNS/devfistop_42            (everyone)
+/PDC1NASFISCORP01_ORA_EBSNS/finfistop_43            (everyone)
+/PDC1NASFISCORP01_ORA_EBSNS/oraswdepo_np            (everyone)
+/PDC1NASFISCORP01_ORA_EBSNS/trnfistop_44            (everyone)
+/PDC1NASFISCORP01_ORA_EBSNS/tstfistop               (everyone)
+/PDC1NASFISCORP01_ORA_EBSNS_BKP                     (everyone)
+/                                                   (everyone)
+/PDC1NASFISCORP1_SQLAlwaysON                        (everyone)
+
+
+check for UDP and version
+$ /usr/sbin/rpcinfo -u <servername> nfs
+program 100003 version 3 ready and waiting
+
+
+
+
+
+
+
+
+
+
+
+[ HTTPD ]
+WEB Server Apache
+
+yum install httpd
+
+yum install httpd-manual
+apachectl graceful		# to load config w/o disconnecting any connections
+
+
+
+**Configuration
+/etc/httpd/conf
+/etc/httpd/conf.d
+/etc/httpd/conf.d/README
+/etc/httpd/conf.d/autoindex.conf
+/etc/httpd/conf.d/userdir.conf
+/etc/httpd/conf.d/welcome.conf
+/etc/httpd/conf.modules.d
+/etc/httpd/conf.modules.d/00-base.conf
+/etc/httpd/conf.modules.d/00-dav.conf
+/etc/httpd/conf.modules.d/00-lua.conf
+/etc/httpd/conf.modules.d/00-mpm.conf
+/etc/httpd/conf.modules.d/00-proxy.conf
+/etc/httpd/conf.modules.d/00-systemd.conf
+/etc/httpd/conf.modules.d/01-cgi.conf
+/etc/httpd/conf/httpd.conf
+/etc/httpd/conf/magic
+/etc/httpd/logs
+/etc/httpd/modules
+/etc/httpd/run
+/etc/logrotate.d/httpd
+/etc/sysconfig/htcacheclean
+/etc/sysconfig/httpd
+
+
+/usr/lib/systemd/system/htcacheclean.service
+/usr/lib/systemd/system/httpd.service
+
+/usr/libexec/initscripts/legacy-actions/httpd
+/usr/libexec/initscripts/legacy-actions/httpd/configtest
+/usr/libexec/initscripts/legacy-actions/httpd/graceful
+/usr/sbin/apachectl
+/usr/sbin/fcgistarter
+/usr/sbin/htcacheclean
+/usr/sbin/httpd
+/usr/sbin/rotatelogs
+/usr/sbin/suexec
+
+/var/cache/httpd
+/var/cache/httpd/proxy
+/var/lib/dav
+/var/log/httpd
+/var/www
+/var/www/cgi-bin
+/var/www/html
+
+
+
+
+check firewall
+# firewall-cmd --list-all
+# firewall-cmd --add-service=httpd
+
+
+create other website folde
+# mkdir /otherwebsite
+# vi /otherwebsite/index.html
+<html>
+<center>
+<h3>HELLO WORLD</h3>
+</center>
+<hr>
+</html>
+
+
+configure http to use the otherwebsite
+# vi /etc/httpd/conf/httpd.conf
+
+#DocumentRoot "/var/www/html"
+DocumentRoot "/otherwebsite"
+
+<Directory "otherwebsite">
+    AllowOverride None
+    # Allow open access:
+    Require all granted
+</Directory>
+
+
+
+!!!! if SELINUX IS RUNNING
+
+# getenforce   or sestatus
+Enforcing
+
+run the following command on the SAMBA SHARE folder
+# ls -lZ 
+# semanage fcontext -a -t samba_share_t "/SMBUserFiles(/.*)?"
+# restorecon -R -v /SMBUserFiles
+
+
+service httpd restart
+firewall-cmd --list-all
+firewall-cmd --add-service=http
+
+
+open IE browser on other machines 
+
+https://<ipaddres>
+
+
+
+
+
+
+
+[GNOME]
+
+install gnome desktop
+# yum grouplist
+# yum groupinstall gnome-desktop x11 fonts   OR   
+
+enable gnome on bootup
+# systemctl set-default graphical.target
+
+switch from terminal to GUI
+# systemctl start graphical.target
+
+
+
+
+
+
+
+[ SHELL ]
+
+[ BASH SHELL ]
+/etc/profile
+~/.bash_profile
+~/.bash_login
+~/.profile
+~/.bash_logout
+~/.bashrc
+
+[ KSH SHELL ]
+~/.kshrc
+/etc/profile
+~/.profile
+
+
+[ CSH SHELL ]
+/etc/.login
+/etc/csh.cshrc
+/etc/csh.login
+~/.cshrc
+~/.login
+~/.logout
+
+
+# echo $SHELL
+# echo $PS1
+[\u@\h \W]\$    = [username@hostname ~]$
+
+
+- auto-completed using tab key
+- up arrow key to see history
+
+# history  		view commands type in
+
+alias sysstat='systemctl status'
+
+
+
+
+
+
+
+[ LINUX AS A ROUTER ]
+
+2 Interface both should be STATI IPs
+
+
+
+
+
+
+
+
+
+
+
+[ (1)YUM EXCLUDE=  OR  (2)VERSIONLOCK FIXED SPECIFIC PACKAGE VERSION ]
+
+(1)
+# vi /etc/yum.conf
+# exclude=gcc-*
+
+
+
+(2)
+# yum install yum-plugin-versionlock
+
+add gcc-* package version to lock   or edit /etc/yum/pluginconf.d/versionlock.list directly
+below will NOT allow to upgrade the gcc package to version greater than what was installed at the time the locking was performed
+# yum versionlock [add] gcc-*
+
+check list of package with versionlock
+# yum versionlock list
+
+delete versionlock entry
+# yum versionlock delete gcc-*
+
+erase ALL list of package on the /etc/yum/pluginconf.d/versionlock.list
+# yum versionlock clear
+
+
+
+
+
+[SAMBA] 
+
+# yum install samba
+
+add to firewall
+# firewall-cma --list-all
+# firewall-cmd --add-service=samba
+
+
+# vi /etc/samba/smb.conf
+
+
+[global]
+	workgroup = SAMPLEGROUP
+	server string = Samba Server Version %v
+
+	netbios name = MYSERVER
+
+
+add your share folder
+[SMBUserFiles]
+	comment = Samba share folder
+	path = /SMBUserFiles
+	writable = yes	
+	public = no	## require password
+	
+
+
+# testparm
+
+# service samba restart/reload
+
+
+
+
+add smb user
+#smbpasswd -a root
+New SMB password:
+Retype new SMB password:
+
+
+list available samba on the client on LINUX
+# smbclient -L <hostname>
+
+
+ADD SAMBA SHARE
+create a samba share folder
+# mkdir /<SMBUserFiles>
+
+
+!!!! if SELINUX IS RUNNING
+
+# getenforce   or sestatus
+Enforcing
+
+run the following command on the SAMBA SHARE folder
+# ls -lZ 
+# semanage fcontext -a -t samba_share_t "/SMBUserFiles(/.*)?"
+# restorecon -R -v /SMBUserFiles
+
+
+check from windows
+open file expolorer then type
+
+\\<sambaIPaddr>
+
+
+enter 
+username root
+password toor
+
+
+
+
+
+[telnet-server]
+
+yum install telnet-server
+
+systemctl status  telnet.socket
+systemctl start  telnet.socket
+
+ss -ltn   ## look for port 23
+
+
+
+[ftp server]
+
+# yum install ftpd
+
+# vi /etc/vsftpd/vsftpd.conf
+
+# anonymous_enable=YES    ## remark out
+anonymous_enable=NO	## force user to authenticate
+
+ftpd_banner=Welcome to YOUR FTP service.
+
+add the last line
+local_root=/var/ftp		## will server as ftp user dir
+
+
+restart ftp service
+# service vsftpd restart
+
+firewall-cmd --list-all
+firewall-cmd --add-service=vsftpd
+
+ss -ltn   ## look for port 21
+
+
+
+
+[squid server]
+
+yum install squid
+
+vi /etc/squid/squid.conf
+
+
+# Uncomment and adjust the following to add a disk cache directory.
+cache_dir ufs /var/spool/squid 100 16 256
+
+
+service squid restart
+
+ss -lt
+
+firewall-cmd --list-all
+firewall-cmd --add-service=squid
+
+
+ss -ltn   ## look for port 3128
+
+confirgure client to use the nqew proxy server
+put IP address and port 3128
+by pass  proxy server for local access
+
+
+
+
+
+
+[firewall-cmd]
+
+list zones
+# firewall-cmd --get-zones
+
+list services
+# firewall-cmd --get-service
+
+list trusted zone
+firewall-cmd --zone=trusted --list-ports
+
+add port to trusted zone
+firewall-cmd --zone=trusted --add-port=443/tcp
+
+
+
+
+
+[tigetvnc-server]
+
+# yum install tigervnc-server
+
+# cp -a /lib/systemd/system/vncserver@.service   /etc/systemd/system/vncserver@:1.service
+
+# vi /etc/systemd/system/vncserver@:1.service
+
+[Service]
+#ExecStart=/usr/sbin/runuser -l <USER> -c "/usr/bin/vncserver %i"
+ExecStart=/usr/sbin/runuser -l abet -c "/usr/bin/vncserver %i"
+
+switch user 
+# su abet
+
+# vncpasswd
+Password must be at least 6 characters - try again
+Password:password
+Verify:	password
+
+
+ss -ltn	## look for port 5901
+
+firewall-cmd --list-all
+firewall-cmd --add-port=5901/tcp
+
+
+systemctl start vncserver@:1.service
+
+from client connect using vnc client tio this server
+
+
+
+
+
+[tunnel insecure connection SSH]
+
+make a web :80 connection to remote machine via SSH
+this will connect to secure port 8000 on this machine to connect to www:80
+ L = local port
+# ssh -L 8000:otherwebsite:80 root@<remote machine>
+
+
+
+make a vnc :5901 (can use diff port) connection to remote machine via SSH
+this will connect to secure port :5901 on this machine to connect to vnc:5901
+ L = local port
+# ssh -L 5901:otherwebsite:5901 root@<remote machine>
+
+
+
+
+
+[SSH auto connection]
+
+create private key
+
+# ssh-keygen -t rsa
+Generating public/private rsa key pair.
+Enter file in which to save the key (/root/.ssh/id_rsa):
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /root/.ssh/id_rsa.
+Your public key has been saved in /root/.ssh/id_rsa.pub.
+The key fingerprint is:
+ef:c3:7d:13:83:96:3e:ec:c9:3a:da:80:c8:3e:88:3e root@kembot.mo
+The key's randomart image is:
++--[ RSA 2048]----+
+|                 |
+|                 |
+|                 |
+|                 |
+|        S    o   |
+|   . . . .  + o  |
+| . .o . ...=   o |
+|.E...    ++.=.o  |
+|... ..  ..+=+o . |
++-----------------+
+
+
+
+# ls ~/.ssh
+id_rsa  id_rsa.pub  known_hosts
+
+
+copy pub key to ssh server
+# ssh-copy-id root@<hostname/ipadd>
+/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+root@10.111.35.71's password:
+This is ~/.bashrc file...
+This is /etc/bash file ...
+
+Number of key(s) added: 1
+
+Now try logging into the machine, with:   "ssh 'root@10.111.35.71'"
+and check to make sure that only the key(s) you wanted were added.
+
+
+make your private key to reside in memory so it will not ask for name and password
+
+# ssh-agent
+SSH_AUTH_SOCK=/tmp/ssh-q4llvd7WFp02/agent.5326; export SSH_AUTH_SOCK;
+SSH_AGENT_PID=5327; export SSH_AGENT_PID;
+echo Agent pid 5327;
+
+# ssh-add
+Could not open a connection to your authentication agent.
+# eval $(ssh-agent)
+# ssh-add
+Enter passphrase for /root/.ssh/id_rsa:
+Identity added: /root/.ssh/id_rsa (/root/.ssh/id_rsa)
+
+
+
+ON REMOTE SSH SERVER
+disable  PasswordAuthentication yes
+
+vi /etc/ssh/sshd_config
+#PasswordAuthentication yes
+PasswordAuthentication no
+
+
+## NOT WORKING>>>>>
+
+[NFS]
+
+yum install nfs-utils nfs4-acl-tools
+
+version:
+	NFSv2	- UDP and it was stateless
+	NFSv3 	- support > 2GB files
+	NFSv4 	- intro security and stateful protocol
+
+deamons
+	portmap
+	nfs
+
+port/s
+	111, 2049
+
+/etc/exports	
+	permissions :
+	ro; rw; 
+	sync 	- clients must send a "commit" before hosts write the chages to permanent storage
+	no_subtree_check; 
+	no_root_squash	- allows the root user to connect to the export; squashes the power of remote root users
+
+
+
+vi /etc/exports
+/UserFiles *(rw, roo_squash)
+
+
+allow ip segements to access the share
+
+# vi /etc/hosts.allow
+
+portmap: XX.XX.XX.0/24
+lockd: <IPadd>.0/24
+rquotad: <IPadd>.0/24
+mountd: <IPadd>.0/24
+statd: <IPadd>.0/24
+
+
+deny all others to access the share except the hosts.allow
+
+# vi /etc/hosts.deny
+
+portmap: ALL
+lockd: ALL
+rquotad: ALL
+mountd: ALL
+statd: ALL
+
+# exportfs -v	## export immediately the FS
+
+
+# service nfs start
+Redirecting to /
+bin/systemctl start  nfs.service
+
+
+add to firewall
+firewall-cmd --add-service=mountd
+firewall-cmd --add-service=rpc-bind
+firewall-cmd --add-service=nfs
+
+check nfs
+# rpcinfo -p <hostname/ipadd>
+# showmount -e  <hostname/ipadd>
+Error:      clnt_create: RPC: Port mapper failure - Unable to receive: errno 113 (No route to host)	
+Soln: 	 firewall issue on rpc-bind
+Error:	rpc mount export: RPC: Unable to receive; errno = No route to host
+Soln:	 firewall issue on mountd
+Error:	rpc mount export: RPC: Authentication error; why = Failed (unspecified error)
+	no solution yet
+
+
+
+
+
+[autofs]
+
+# yum install autofs
+
+# vi /etc/auto.master
+/<localmntpoint>	/etc/auto.server	--timeout=600
+
+# vi /etc/auto.server
+userfiles -fstype=cifs,credentials=/etc/auto.auth : //<remotehost>/<folder>
+
+# vi /etc/auto.auth
+username=root
+password=toor
+
+# service autofs start
+
+
+
+
+
+[directory service]
+
+# yum install authconfig
+
+# vi /etc/sssd/sssd.conf
+
+# vi /etc/nsswitch.conf
+
+# service sssd status/start
+
+
+
+[LDAP]  		# no multiple account creation on many servers
+
+yum install openldap openldap-clients
+yum install sssd python-sssdconfig
+
+ports:   389 and 636 (secured)
+
+# authoconfig --enablesssd --enablesssdauth --enablelocauthorize --enableldap --enableldapauth 
+--ldapserver=ldap://<ipadd>:389 --disableldaptls --ldapbasedn=example,dc=com --enablerfc2307bis
+--enablemkhomedir --enablecachecreds --update
+
+this will update /etc/sssd.conf  & /etc/nsswitch
+
+# service sssd status/start
+
+
+
+
+
+[boot]
+
+
+[boot loader]
+
+#vi /etc/default/grub
+
+add ipv6.disable=1 	## to disable ipv6 on bootup
+GRUB_CMDLINE_LINUX="crashkernel=auto rd.lvm.lv=rhel_kembot/root rd.lvm.lv=rhel_kembot/swap rhgb quiet ipv6.disable=1"
+
+# vi /etc/grub.d/40_custom
+
+update the grub.cfg
+# grub2-mkconfig -o /boot/grub2/grub.cfg
+
+# reboot or init 6
+
+
+[boot to gain access]    
+
+to change root password   
+boot up to single user mode
+
+during boot up press up / down arrow
+select the top most kernel  the press "e" to edit
+
+go to line with linux16
+
+change ro with 
+
+rw init=/sysroot/bin/sh
+press ctrl x to boot to very small shell
+
+# ls -l		## ull see small # of command
+
+# chroot /sysroot
+
+# passwd		## to change root password
+
+
+
+
+[boot to old kernel]
+
+
+Issue
+   System installed with latest kernel version, but need to boot with old one.
+   How to change the default boot entry for kernel in RHEL 7 ?
+
+
+Resolution:
+
+   Check default:
+
+   $ cat /etc/sysconfig/kernel
+   # UPDATEDEFAULT specifies if new-kernel-pkg should make
+   # new kernels the default
+   UPDATEDEFAULT=yes
+
+   # DEFAULTKERNEL specifies the default kernel package type
+   DEFAULTKERNEL=kernel
+
+
+   Check kernel entry  on /etc/grub2.cfg
+
+   ~]# awk -F\' '$1=="menuentry " {print $2}' /etc/grub2.cfg
+
+   Eg: 
+   ~]#  awk -F\' '$1=="menuentry " {print $2}' /etc/grub2-efi.cfg 
+   Red Hat Enterprise Linux Server (3.10.0-693.el7.x86_64) 7.3 (Maipo)           <<==== Entry 0
+   Red Hat Enterprise Linux Server (3.10.0-514.el7.x86_64) 7.3 (Maipo)           <<==== Entry  1
+   Red Hat Enterprise Linux Server (0-rescue-d3c598b9d2204138bd2e1001316a5cc6) 7.3 (Maipo)
+
+   Set what entry to load
+
+   ~]# grub2-set-default 1
+
+   
+   
+   Verify new settings
+
+   ~]# cat /boot/grub2/grubenv |grep saved
+ 
+   Eg:
+   ~]# cat /boot/grub2/grubenv |grep saved
+   saved_entry=1
+
+
+	OPTIONAL !!!
+   Changes to /etc/default/grub require rebuilding the grub.cfg file as follows:
+
+   Rebuild the /boot/grub2/grub.cfg file by running the grub2-mkconfig -o command as follows:
+
+      On BIOS-based machines: ~]# grub2-mkconfig -o /boot/grub2/grub.cfg
+      On UEFI-based machines: ~]# grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[kernel]
+
+sysctl -a 	## all kernel parameters
+
+sysctl -a | grep ip_foward
+
+sysctl -w net.ip4.ip_forward
+
+
+
+
+
+
+[ ss or netstat(deprecated) ]
+
+ss -t -a 
+
+ss -tl   or -ul 
+
+Show all sockets connecting to 192.168.1.10 on port 443
+# ss -t dst 192.168.1.10:443
+
+List tcp and udp ports with no hostname resolution
+# ss -tun
+
+Print process which owns the connection
+# ss -ltp
+
+Show all sockets connecting to 192.168.1.10 on port 443
+# ss -t dst 192.168.1.10:443
+
+Show all ssh related connection
+# ss -t state established '( dport = :ssh or sport = :ssh )'
+
+Display PID (Process IDs) of Sockets
+$ ss -p
+
+Filter Connections by Port Number
+$ ss -at '( dport = :22 or sport = :22 )'    OR    $ ss -at '( dport = :ssh or sport = :ssh )'
+
+Display Summary Statistics
+$ ss -s
+
+
