@@ -1,5 +1,5 @@
 chk_disk_space_80.sh
-
+chk_disk_linux.sh
 
 
 
@@ -16,3 +16,18 @@ else
   echo "Please investigate the filesystems:"
   echo "$df_ok"
 fi
+
+
+
+
+
+[ chk_disk_linux.sh ]
+#!/bin/bash
+
+fdisk -l 
+echo; echo;
+pvdisplay
+echo; echo
+vgdisplay
+echo; echo
+lvdisplay
