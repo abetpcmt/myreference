@@ -1,5 +1,7 @@
 chk_disk_space_80.sh
 chk_disk_linux.sh
+chk_nics_linux.sh
+chk_release_linux.sh
 
 
 
@@ -31,3 +33,26 @@ echo; echo
 vgdisplay
 echo; echo
 lvdisplay
+
+
+
+[ chk_nics_linux.sh ]
+#!/bin/bash
+
+ip a
+
+
+
+
+[ chk_release_linux.sh ]
+#!/bin/bash
+
+release_list="redhat-release oracle-release enterprise-release SuSE-release"
+
+for release in release_list
+do
+  if [ -f "/etc/$release" ]
+  then
+    cat /etd/$release
+  fi
+done
