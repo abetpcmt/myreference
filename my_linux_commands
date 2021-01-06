@@ -1,0 +1,18 @@
+chk_disk_space_80.sh
+
+
+
+
+
+[ chk_disk_space_80.sh ]
+#!/bin/bash
+
+df_ok=`df -kP | sed 's/%//g' | awk '$5 > 79' | egrep -v "^Filesystem|^tmpfs"`
+if [ -z "$df_ok" ]
+then
+  echo "All filessytems are < 80% - OK" 
+else
+  echo "One or move filesystems are >= 80% - FAILED"
+  echo "Please investigate the filesystems:"
+  echo "$df_ok"
+fi
