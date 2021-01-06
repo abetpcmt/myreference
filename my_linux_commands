@@ -2,7 +2,7 @@ chk_disk_space_80.sh
 chk_disk_linux.sh
 chk_nics_linux.sh
 chk_release_linux.sh
-
+chk_network_linux.sh
 
 
 
@@ -56,3 +56,18 @@ do
     cat /etd/$release
   fi
 done
+
+
+
+
+
+[ chk_network_linux.sh ]
+#!/bin/bash
+
+ip a
+
+for file in `ls -1 /etc/hosts /etc/netmasks /etc/sysconfig/network /etc/sysconfig/network-scripts/ifcfg-* /etc/sysconfig/network-scripts/route* 2>/dev/null`
+do
+  (ls -l "$file"; echo; cat $file) 
+done
+
