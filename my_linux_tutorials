@@ -2535,3 +2535,35 @@ Display Summary Statistics
 $ ss -s
 
 
+
+
+
+[ VirtualBox Guest Addition ]
+
+1. Create Virtual Host on VirtualBoX
+
+On CentOS
+
+2. # yum install epel-release
+
+3. # yum install dkms kernel-devel
+
+On VM Device
+4. select Install Guest Additions
+	- in GUI it wil automount
+	- in terminal 
+		# mount /dev/sr0 /media
+
+On CentOS		
+5. Install VBox Addition
+   #  ./VBoxLinuxAdditions.run
+   
+6. Reboot  VM Guest host
+
+on VM Device
+7. Share Folder  / Add folder to share from windows directory
+
+to check 
+8. # /media/sf_Share_VM_Directory/ 
+
+
