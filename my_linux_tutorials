@@ -2563,7 +2563,7 @@ On CentOS
 on VM Device
 7. Share Folder  / Add folder to share from windows directory
 
-to check 
+to check   ## only root can access this location
 8. # /media/sf_Share_VM_Directory/ 
 
 
