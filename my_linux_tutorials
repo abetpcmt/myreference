@@ -2567,3 +2567,35 @@ to check
 8. # /media/sf_Share_VM_Directory/ 
 
 
+
+[ rTorrent Installation ]
+
+1. # yum install epel-relase
+
+2. # yum install rtorrent
+
+3. # ls -l /usr/share/doc/rtorrent/rtorrent.rc
+
+4. # cp -a /usr/share/doc/rtorrent/rtorrent.rc /home/<username>/.rtorrent.rc
+
+5. edit rtorrent.rc
+	directory.default.set = ./Downloads
+	session.path.set = ./rtorrent/session
+	schedule2 = watch_directory,5,5,load.start=./rtorrent/watch/*.torrent
+	dht.mode.set = auto
+	dht.port.set = 6881
+
+as normal user
+6. creat directory
+	mkdir /home/username/Downloads
+	mkdir /home/username/rtorrent/session
+	mkdir /home/username/rtorrent/watch
+	
+7. download torrent files 
+	cd /home/username/rtorrent/watch
+	# wget -c <torrent URL address here> .
+	
+8. run rtorrent
+	# rtorrent
+	
+	
