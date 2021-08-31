@@ -68,7 +68,14 @@ define('NONCE_SALT',       'pScuJn.h7xF7#}3.0|!t%PB<+_U2Do?^<giHW{U=KEIcxi;WQ]0c
 /**#@-*/
 
 
+define('FS_METHOD','direct');
 
+4. allow access to wp-content  folder
+
+    $ sudo chmod 777 /var/www/html/wp-content
+    $ sudo chmod 777 /var/www/html/wp-content/plugins
+    
+    
 
 4. Test new wordpress 
 
