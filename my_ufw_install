@@ -12,6 +12,17 @@ $ sudo ufw status verbose
 
 
 
+
+DEFAULT RULES FOR PERSONAL COMPUTER
+
+$ sudo ufw default deny incoming
+$ sudo ufw default allow outgoing
+
+
+
+
+FOR SERVER SETUP RULES
+
 ALLOW SSH
  
 $ sudo ufw allow OpenSSH
